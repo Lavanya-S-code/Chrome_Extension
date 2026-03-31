@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>API Keys Configuration</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      width: 380px;
+      margin: 0;
+      padding: 0;
+      background: #f7f9fa;
+      color: #222;
+    }
+    .container {
+      padding: 18px 18px 10px 18px;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 1.5em;
+      font-weight: 700;
+      color: #1976d2;
+      letter-spacing: 0.5px;
+    }
+    h2 {
+      margin-top: 18px;
+      margin-bottom: 8px;
+      font-size: 1.1em;
+      font-weight: 700;
+      color: #444;
+      border-bottom: 2px solid #e3eaf2;
+      padding-bottom: 6px;
+    }
+    h2:first-of-type {
+      margin-top: 0;
+    }
+    label {
+      font-size: 0.95em;
+      color: #444;
+      margin-bottom: 6px;
+      display: block;
+    }
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 1.5px solid #e3eaf2;
+      border-radius: 5px;
+      font-size: 0.95em;
+      margin-bottom: 12px;
+      background: #fff;
+      color: #222;
+      box-sizing: border-box;
+    }
+    input:focus {
+      outline: none;
+      border-color: #1976d2;
+      box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 10px 0;
+      margin: 8px 0 0 0;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      font-weight: 600;
+      background: #1976d2;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #1565c0;
+    }
+    .btn:disabled {
+      background: #b0bec5;
+      cursor: not-allowed;
+    }
+    #status {
+      color: #388e3c;
+      font-size: 0.97em;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+    .info-box {
+      margin-top: 12px;
+      font-size: 0.92em;
+      color: #666;
+      background: #e3eaf2;
+      border-radius: 5px;
+      padding: 10px 12px;
+    }
+    .info-box a {
+      color: #1976d2;
+      text-decoration: none;
+    }
+    .info-box a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>API Configuration</h1>
+
+    <h2>Deepgram API Key</h2>
+    <label for="apiKey">Deepgram API Key:</label>
+    <input type="password" id="apiKey" autocomplete="off" placeholder="Enter your Deepgram key" />
+    <div class="info-box">
+      Get your Deepgram API key from <a href="https://console.deepgram.com/project/default/keys" target="_blank">console.deepgram.com</a>
+    </div>
+
+    <h2>Gemini API Key</h2>
+    <label for="geminiKey">Google Gemini API Key:</label>
+    <input type="password" id="geminiKey" autocomplete="off" placeholder="Enter your Gemini API key" />
+    <div class="info-box">
+      Get your Gemini API key from <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a>
+    </div>
+
+    <button id="saveBtn" class="btn">Save All Keys</button>
+    <div id="status"></div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

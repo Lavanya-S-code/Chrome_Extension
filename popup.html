@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>AI Tab Transcriber</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      --surface: rgba(255, 255, 255, 0.05);
+      --surface-hover: rgba(255, 255, 255, 0.1);
+      --surface-border: rgba(255, 255, 255, 0.1);
+      --accent: #8b5cf6;
+      --accent-hover: #7c3aed;
+      --accent-glow: rgba(139, 92, 246, 0.4);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius: 16px;
+      --font-family: 'Outfit', sans-serif;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --success: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-family);
+      width: 420px;
+      margin: 0;
+      padding: 0;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      overflow-x: hidden;
+    }
+
+    .container {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Header ────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-branding {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+    }
+
+    .titles h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .titles .subtitle {
+      margin: 2px 0 0 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .settings-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .settings-btn:hover {
+      background: var(--surface-hover);
+      color: var(--text-main);
+    }
+
+    .settings-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ── Main Controls ─────────────────────────────────── */
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: var(--font-family);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover:not(:disabled)::before {
+      opacity: 1;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: grayscale(100%);
+    }
+
+    #startBtn {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    #startBtn:hover:not(:disabled) {
+      background: var(--accent-hover);
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+
+    /* Small secondary button grid */
+    .secondary-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-small {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text-main);
+      padding: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: 12px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s;
+    }
+
+    .btn-small:hover:not(:disabled) {
+      background: var(--surface-hover);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    #stopBtn {
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    #stopBtn:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    /* ── Status Bar ────────────────────────────────────── */
+    .status-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      backdrop-filter: blur(12px);
+    }
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      position: relative;
+    }
+
+    .status-indicator.active {
+      background: var(--success);
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+      animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .status-indicator.error {
+      background: var(--danger);
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+      }
+    }
+
+    .status-text-content {
+      flex: 1;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    #errorMsg {
+      display: none;
+      font-size: 0.8rem;
+      color: #fca5a5;
+      margin-top: 4px;
+    }
+
+    /* ── Transcript Area ───────────────────────────────── */
+    .transcript-container {
+      position: relative;
+    }
+
+    .transcript-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+
+    .transcript-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    #transcription {
+      height: 220px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      overflow-y: auto;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: var(--text-main);
+      backdrop-filter: blur(4px);
+    }
+
+    #transcription span {
+      transition: color 0.3s;
+    }
+
+    #transcription span:last-child {
+      color: #a78bfa !important;
+      /* Highlight interim text in nice purple */
+    }
+
+    #transcription:empty::before {
+      content: 'Live transcription will appear here...';
+      color: rgba(255, 255, 255, 0.3);
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-size: 0.95rem;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* ── Summary Section ──────────────────────────────── */
+    .summary-container {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      backdrop-filter: blur(4px);
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .summary-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .summary-input-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .gemini-input {
+      flex: 1;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-family: var(--font-family);
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .gemini-input:focus {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .gemini-input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .summary-output {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 12px;
+      min-height: 60px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--text-main);
+      display: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .summary-output.active {
+      display: block;
+    }
+
+    .summary-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 0.9rem;
+      color: #fca5a5;
+      display: none;
+    }
+
+    .summary-error.active {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-branding">
+        <div class="logo">A</div>
+        <div class="titles">
+          <h1>AI Tab Transcriber</h1>
+          <p class="subtitle">Real-time Audio Copilot</p>
+        </div>
+      </div>
+      <a href="options.html" target="_blank" class="settings-btn" title="API Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </a>
+    </div>
+
+    <!-- Status -->
+    <div class="status-card">
+      <div id="connDot" class="status-indicator"></div>
+      <div class="status-text-content">
+        <div id="statusText">Ready to transcribe</div>
+        <div id="errorMsg"></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button id="startBtn" class="btn">
+        <svg style="width:20px;height:20px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+        </svg>
+        Start Listening
+      </button>
+
+      <div class="secondary-controls">
+        <button id="stopBtn" class="btn-small btn-secondary" disabled>Stop</button>
+        <button id="clearBtn" class="btn-small btn-secondary">Clear</button>
+        <button id="downloadBtn" class="btn-small btn-secondary">Save .txt</button>
+      </div>
+    </div>
+
+    <!-- Transcript box -->
+    <div class="transcript-container">
+      <div class="transcript-header">
+        <span class="transcript-title">Live Transcript</span>
+      </div>
+      <div id="transcription"></div>
+    </div>
+
+    <!-- Summary Section -->
+    <div class="summary-container">
+      <div class="summary-header">
+        <span class="summary-title">✨ Summary & Questions</span>
+      </div>
+      <button id="generateSummaryBtn" class="btn-small btn-secondary" style="width: 100%; margin-bottom: 8px;">
+        Generate Summary
+      </button>
+      <div class="summary-input-group">
+        <input 
+          type="text" 
+          id="geminiPrompt" 
+          placeholder="Ask Gemini about the transcript..." 
+          class="gemini-input"
+        />
+        <button id="sendPromptBtn" class="btn-small btn-secondary" style="padding: 8px 12px;">
+          Send
+        </button>
+      </div>
+      <div id="summaryOutput" class="summary-output"></div>
+      <div id="summaryError" class="summary-error"></div>
+    </div>
+
+  </div>
+  <script src="popup.js"></script>
+</body>
+
+</html>
